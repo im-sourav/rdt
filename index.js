@@ -64,7 +64,7 @@ window.addEventListener("unload", function () {
 })
 
 
-function setUsers(data, index) {
+function setUsers(data) {
   const player = createElement("div", "player", userContener);
   const key = Object.keys(data)[0]; // ob = {sourav: 100}; key = Object.keys(ob)[0]
   if (userName === key) player.classList.add("active");
