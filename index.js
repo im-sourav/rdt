@@ -4,7 +4,7 @@ import {
   getAuth,
   signInWithEmailAndPassword, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-auth.js";
-import { equalTo, get, set, getDatabase, orderByChild, query, remove, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
+import { equalTo, get, set, getDatabase, orderByChild, query, remove, ref, onValue, update } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
 
 
 const firebaseConfig = {
@@ -28,27 +28,25 @@ const nameInput = document.getElementById("name-input");
 const enterButton = document.getElementById("enter-button");
 const userContener = document.getElementById("user-contener");
 let userName = undefined;
-let users = [];
 
 window.onload = function () {
-  users = [];
   onValue(ref(db, `users`), function (snapshort) {
+    userContener.innerHTML = "";
     if (snapshort.exists()) {
-      users = snapshort.val();
-      console.log(users);
-      users.forEach(e => setUsers(e));
+      const users = snapshort.val();
+      for (const key in users) {
+        setUsers({ [key]: users[key] });
+      }
     }
-    const len = users.length;
-
+ 
     function createOne() {
       userName = nameInput.value;
       if (userName.length < 3) return;
-      const q = query(ref(db, "users/"), orderByChild("name"), equalTo(userName));
+      const q = query(ref(db, "users"), orderByChild("name"), equalTo(userName));
       get(q).then(function (sp) {
         if (!sp.exists()) {
-          const ob = { name: userName, score: 0 };
-          set(ref(db, `users/${len}`), ob).then(function () {
-            console.log("user create");
+          set(ref(db, `users/${userName}`), 0).then(function () {
+            // console.log("user create");
             enterNameEindow.classList.toggle("active", false);
           })
         }
@@ -60,30 +58,41 @@ window.onload = function () {
 }
 
 window.addEventListener("unload", function () {
-  let i = 0
-  for (; i < users.length; i++) if (users[i].name == userName) break;
-
-  remove(ref(db, `users/${i}`)).then(function () {
-    console.log("remove");
+  remove(ref(db, `users/${userName}`)).then(function () {
+    // console.log("remove");
   });
 })
 
 
-function setUsers(data, you = false) {
+function setUsers(data, index) {
   const player = createElement("div", "player", userContener);
-  if (userName === data.name) player.classList.add("active");
+  const key = Object.keys(data)[0]; // ob = {sourav: 100}; key = Object.keys(ob)[0]
+  if (userName === key) player.classList.add("active");
 
-  const name = userName == data.name ? "you" : data.name;
+  const name = userName == key ? "you" : key;
 
   const name_score = createElement("div", "name-score", player);
   createElement("div", "player-name", name_score, `Name <x>${name}</x>`);
-  createElement("div", "player-score", name_score, `Score <x>${data.score}</x>`);
+  createElement("div", "player-score", name_score, `Score <x>${data[key]}</x>`);
 
   const in_de = createElement("div", "in-de", player);
   const plus = createElement("div", "plus", in_de);
   const mine = createElement("div", "mine", in_de);
 
-  userContener.style.height = "auto";
+  function updateValue(d) {
+    get(ref(db, `users/${key}`)).then(function (sp) {
+      const scr = Number(sp.val());
+      update(ref(db, `users/`), {[key]: scr + d}).then(() => {
+      })
+    })
+  }
+
+  plus.addEventListener("click", () => {
+    updateValue(1)
+  });
+  mine.addEventListener("click", () => {
+    updateValue(-1)
+  });
 }
 
 function createElement(element, className = null, parent = null, text = null) {
@@ -96,4 +105,4 @@ function createElement(element, className = null, parent = null, text = null) {
   }
   return e;
 }
-// 
+

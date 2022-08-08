@@ -15,6 +15,7 @@ body {
   display: grid;
   place-items: center;
   background: rgb(40, 42, 56);
+  overflow-x: hidden; 
 }
 section {
   --gap: 5px;
@@ -61,13 +62,17 @@ section .player .name-score .player-name x {
   margin-left: 5px;
   padding: 0 3px;
   border-radius: 5px;
-  background:rgba(0, 0, 0, 0.2);
+  background:rgba(255, 255, 255, 0.3);
+  color: #000000;
 }
-section .player .name-score .player-name x {
-  color: #00ffff;
+
+section .player.active .name-score .player-score x,
+section .player.active .name-score .player-name x {
+  background:rgba(0, 0, 0, 0.3);
+  color: #53ff53;
 }
-section .player .name-score .player-score x {
-  color: #2fff00;
+section .player.active .name-score .player-score x {
+  color: #ff9000;
 }
 section .player .in-de {
   position: relative;
