@@ -4,7 +4,7 @@ import {
   getAuth,
   signInWithEmailAndPassword, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-auth.js";
-import { equalTo, get, set, getDatabase, orderByChild, query, remove, ref } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
+import { equalTo, get, set, getDatabase, orderByChild, query, remove, ref, onValue } from "https://www.gstatic.com/firebasejs/9.6.7/firebase-database.js";
 
 
 const firebaseConfig = {
@@ -32,10 +32,11 @@ let users = [];
 
 window.onload = function () {
   users = [];
-  get(ref(db, `users`)).then(function (snapshort) {
+  onValue(ref(db, `users`), function (snapshort) {
     if (snapshort.exists()) {
       users = snapshort.val();
-      users.forEach(e => setUsers);
+      console.log(users);
+      users.forEach(e => setUsers(e));
     }
     const len = users.length;
 
@@ -46,9 +47,7 @@ window.onload = function () {
       get(q).then(function (sp) {
         if (!sp.exists()) {
           const ob = { name: userName, score: 0 };
-          users.push(ob);
           set(ref(db, `users/${len}`), ob).then(function () {
-            setUsers(ob, true);
             console.log("user create");
             enterNameEindow.classList.toggle("active", false);
           })
@@ -72,9 +71,9 @@ window.addEventListener("unload", function () {
 
 function setUsers(data, you = false) {
   const player = createElement("div", "player", userContener);
-  if (!you) player.classList.add("active");
+  if (userName === data.name) player.classList.add("active");
 
-  const name = you ? "you" : data.name;
+  const name = userName == data.name ? "you" : data.name;
 
   const name_score = createElement("div", "name-score", player);
   createElement("div", "player-name", name_score, `Name <x>${name}</x>`);
